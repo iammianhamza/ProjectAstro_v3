@@ -127,16 +127,8 @@ rm -rf "$tmp" && mkdir -p "$tmp"
 (
   cd "$tmp"
   
-  # Check latest firmware version
-  LOG_INFO "Fetching latest firmware info..."
-  latest=$(samloader -m "$mod" -r "$reg" checkupdate)
-  
-  if [[ -z "$latest" ]]; then
-    LOG_ERROR "Failed to fetch firmware info for $mod ($reg)"
-    exit 1
-  fi
-  
-  LOG_INFO "Latest firmware: $latest"
+  # Use the already-fetched firmware version
+  LOG_INFO "Downloading firmware version: $ver_simple"
   
   # Download firmware with retry logic
   MAX_RETRIES=3
@@ -145,7 +137,7 @@ rm -rf "$tmp" && mkdir -p "$tmp"
   while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
     LOG_INFO "Download attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
     
-    if samloader -m "$mod" -r "$reg" download -v "$latest" -O .; then
+    if samloader -m "$mod" -r "$reg" download -v "$ver_simple" -O .; then
       LOG_INFO "Download successful!"
       break
     else
@@ -162,12 +154,16 @@ rm -rf "$tmp" && mkdir -p "$tmp"
   
   # Decrypt firmware
   LOG_INFO "Decrypting firmware..."
-  if samloader -m "$mod" -r "$reg" decrypt -v "$latest" -V 4 -i "${mod}_${reg}_${latest}.zip" -o .; then
+  if samloader -m "$mod" -r "$reg" decrypt -v "$ver_simple" -V 4 -i "${mod}_${reg}_${ver_simple}.zip" -o .; then
     LOG_INFO "Decryption successful!"
   else
     LOG_ERROR "Decryption failed"
     exit 1
   fi
+  
+  # Move decrypted files to the expected output directory
+  mkdir -p "$FW_OUT_DIR"
+  mv "${mod}_${reg}_${ver_simple}"/* "$FW_OUT_DIR"/ 2>/dev/null || true
 )
 
 if [[ $? -ne 0 ]]; then
