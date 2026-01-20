@@ -1,0 +1,32 @@
+# Device props
+MODEL_NAME="Galaxy S20 5G"
+SIOP_POLICY_NAME=siop_x1q_sm8250
+CODENAME="x1q"
+VNDK="30"
+PLATFORM=sd_8250
+STOCK_MODEL="SM-G981N"
+STOCK_CSC="KOO"
+STOCK_IMEI="353718681151510"
+
+# The firmware to be used as source
+MODEL="SM-G998U1"
+CSC="ATT"
+IMEI="353718681151510"
+
+# Extra firmware which is optional
+EXTRA_MODEL=""
+EXTRA_CSC=""
+EXTRA_IMEI=""
+
+# External
+FILESYSTEM=ext4
+
+# Specs
+DEVICE_HAVE_SPEN_SUPPORT=false
+DEVICE_HAVE_QHD_PANEL=true
+DEVICE_HAVE_HIGH_REFRESH_RATE=true
+SUPPORT_HAPTIC_AUDIO_VIBRATOR=false
+
+# Custom props (If not used , it will use values from stock rom)
+#DEVICE_DISPLAY_HFR_MODE=""
+#DEVICE_DISPLAY_REFRESH_RATE_VALUES_HZ=""
