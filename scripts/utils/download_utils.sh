@@ -71,7 +71,7 @@ FETCH_FW() {
 
         if ls "$TARGET"/AP_*.tar.md5 >/dev/null 2>&1; then
             local AP_FILE=$(ls "$TARGET"/AP_*.tar.md5 2>/dev/null | head -1)
-            local file_size=$(wc -c < "$AP_FILE" 2>/dev/null)
+            local file_size=$(wc -c < "$AP_FILE" 2>/dev/null || echo "0")
             if [[ -f "$AP_FILE" && "$file_size" -gt 1024 ]]; then
                 has_local_fw=true
 

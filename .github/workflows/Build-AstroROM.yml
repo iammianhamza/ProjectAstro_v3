@@ -56,7 +56,7 @@ jobs:
       - name: Extract ROM Contents
         run: |
           cd out
-          ROM_FILE=$(ls *_signed.zip | head -n 1)
+          ROM_FILE=$(find . -maxdepth 1 -name '*_signed.zip' -print | head -n 1 | sed 's|^\./||')
           
           if [ -z "$ROM_FILE" ]; then
             echo "No signed ROM zip found!"
