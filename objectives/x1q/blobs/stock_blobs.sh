@@ -8,9 +8,7 @@ FF "SEC_FLOATING_FEATURE_SYSTEM_CONFIG_SIOP_POLICY_FILENAME" "siop_x1q_sm8250"
 
 #Add Game driver
 ADD_FROM_FW "pa3q" "system" "priv-app/GameDriver-SM8250" 
-#Add Stock Google blobs
-ADD_FROM_FW "pa3q" "product" "priv-app/HotwordEnrollmentOKGoogleEx2HEXAGON"
-ADD_FROM_FW "pa3q" "product" "priv-app/HotwordEnrollmentXGoogleEx2HEXAGON"
+
  
 
 #Fix Edge Lighting
