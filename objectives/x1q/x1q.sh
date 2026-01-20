@@ -9,8 +9,8 @@ STOCK_CSC="KOO"
 STOCK_IMEI="353718681151510"
 
 # The firmware to be used as source
-MODEL="SM-S918B"
-CSC="EUX"
+MODEL="SM-S918U1"
+CSC="ATT"
 IMEI="353718681151510"
 
 # Extra firmware which is optional
