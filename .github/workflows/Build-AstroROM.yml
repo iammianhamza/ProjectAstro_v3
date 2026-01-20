@@ -6,7 +6,7 @@ on:
       device:
         description: 'Device Codename'
         required: true
-        default: 'dm3q'
+        default: 'x1q'
       upload_cloud:
         description: 'Upload ROM to cloud (PixelDrain)'
         required: false
