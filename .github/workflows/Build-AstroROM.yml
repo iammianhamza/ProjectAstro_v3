@@ -7,11 +7,6 @@ on:
         description: 'Device Codename'
         required: true
         default: 'x1q'
-      upload_cloud:
-        description: 'Upload ROM to cloud (PixelDrain)'
-        required: false
-        default: false
-        type: boolean
 
 jobs:
   build:
@@ -58,27 +53,40 @@ jobs:
         run: |
           sudo bash build.sh --build ${{ inputs.device }}
 
-
-      - name: Download PixelDrain CLI (pd)
-        if: ${{ inputs.upload_cloud }}
-        run: |
-          curl -L https://github.com/jkawamoto/go-pixeldrain/releases/download/v0.7.6/pd_0.7.6_linux_amd64.tar.gz -o pd.tar.gz
-          tar -xvf pd.tar.gz
-          chmod +x pd
-          sudo mv pd /usr/local/bin/pd
-          
-      - name: Upload ROM to PixelDrain
-        if: ${{ inputs.upload_cloud }}
-        env:
-          PIXELDRAIN_API_KEY: ${{ secrets.PIXELDRAIN_API_KEY }}
+      - name: Extract ROM Contents
         run: |
           cd out
-          ROM_FILE=$(ls *.zip | head -n 1)
-
+          ROM_FILE=$(find . -maxdepth 1 -name '*_signed.zip' -print | head -n 1 | sed 's|^\./||')
+          
           if [ -z "$ROM_FILE" ]; then
-            echo "No ROM zip found!"
+            echo "No signed ROM zip found!"
             exit 1
           fi
-
-          echo "Uploading $ROM_FILE to PixelDrain..."
-          pd --api-key "$PIXELDRAIN_API_KEY" upload "$ROM_FILE" | sed 's|api/file|u|g'
+          
+          echo "Found ROM: $ROM_FILE"
+          
+          # Create extraction directory
+          EXTRACT_DIR="${ROM_FILE%.zip}_extracted"
+          mkdir -p "$EXTRACT_DIR"
+          
+          # Extract the ROM contents
+          echo "Extracting ROM contents to $EXTRACT_DIR..."
+          unzip -q "$ROM_FILE" -d "$EXTRACT_DIR"
+          
+          echo "ROM contents extracted successfully!"
+          echo "Contents:"
+          ls -lh "$EXTRACT_DIR"
+          
+      - name: Upload ROM ZIP as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AstroROM-${{ inputs.device }}-zip
+          path: out/*_signed.zip
+          retention-days: 30
+          
+      - name: Upload Extracted ROM Contents as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AstroROM-${{ inputs.device }}-extracted
+          path: out/*_extracted/
+          retention-days: 30
