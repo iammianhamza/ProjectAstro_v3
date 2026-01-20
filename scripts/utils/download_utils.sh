@@ -125,13 +125,53 @@ LOG_INFO "Downloading firmware $ver_simple..."
 rm -rf "$tmp" && mkdir -p "$tmp"
 
 (
-  cd "$tmp" 
-  "$PREBUILTS/samfirm/samfirm.js" -m "$mod" -r "$reg" -i "$imei"
+  cd "$tmp"
+  
+  # Check latest firmware version
+  LOG_INFO "Fetching latest firmware info..."
+  latest=$(samloader -m "$mod" -r "$reg" checkupdate)
+  
+  if [[ -z "$latest" ]]; then
+    LOG_ERROR "Failed to fetch firmware info for $mod ($reg)"
+    exit 1
+  fi
+  
+  LOG_INFO "Latest firmware: $latest"
+  
+  # Download firmware with retry logic
+  MAX_RETRIES=3
+  RETRY_COUNT=0
+  
+  while [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; do
+    LOG_INFO "Download attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES..."
+    
+    if samloader -m "$mod" -r "$reg" download -v "$latest" -O .; then
+      LOG_INFO "Download successful!"
+      break
+    else
+      RETRY_COUNT=$((RETRY_COUNT + 1))
+      if [[ $RETRY_COUNT -lt $MAX_RETRIES ]]; then
+        LOG_WARN "Download failed, retrying in 30 seconds..."
+        sleep 30
+      else
+        LOG_ERROR "Download failed after $MAX_RETRIES attempts"
+        exit 1
+      fi
+    fi
+  done
+  
+  # Decrypt firmware
+  LOG_INFO "Decrypting firmware..."
+  if samloader -m "$mod" -r "$reg" decrypt -v "$latest" -V 4 -i "${mod}_${reg}_${latest}.zip" -o .; then
+    LOG_INFO "Decryption successful!"
+  else
+    LOG_ERROR "Decryption failed"
+    exit 1
+  fi
 )
 
-
 if [[ $? -ne 0 ]]; then
-    ERROR_EXIT "Failed to download the firmware for $mod ($reg)"
+    ERROR_EXIT "Failed to download firmware for $mod ($reg)"
 fi
 
     local new_ap=$(ls "$FW_OUT_DIR"/AP_*.tar.md5 2>/dev/null | head -1)
