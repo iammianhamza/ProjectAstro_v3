@@ -154,7 +154,14 @@ rm -rf "$tmp" && mkdir -p "$tmp"
   
   # Decrypt firmware
   LOG_INFO "Decrypting firmware..."
-  if samloader -m "$mod" -r "$reg" decrypt -v "$ver_simple" -V 4 -i "${mod}_${reg}_${ver_simple}.zip" -o .; then
+  # -V 4 specifies the decryption key version used by Samsung firmware
+  local encrypted_file="${mod}_${reg}_${ver_simple}.zip"
+  if [[ ! -f "$encrypted_file" ]]; then
+    LOG_ERROR "Downloaded firmware file not found: $encrypted_file"
+    exit 1
+  fi
+  
+  if samloader -m "$mod" -r "$reg" decrypt -v "$ver_simple" -V 4 -i "$encrypted_file" -o .; then
     LOG_INFO "Decryption successful!"
   else
     LOG_ERROR "Decryption failed"
@@ -162,8 +169,17 @@ rm -rf "$tmp" && mkdir -p "$tmp"
   fi
   
   # Move decrypted files to the expected output directory
+  local decrypted_dir="${mod}_${reg}_${ver_simple}"
   mkdir -p "$FW_OUT_DIR"
-  mv "${mod}_${reg}_${ver_simple}"/* "$FW_OUT_DIR"/ 2>/dev/null || true
+  
+  if [[ -d "$decrypted_dir" ]]; then
+    mv "$decrypted_dir"/* "$FW_OUT_DIR"/ 2>/dev/null
+    if [[ $? -ne 0 ]]; then
+      LOG_WARN "Some files could not be moved from $decrypted_dir to $FW_OUT_DIR"
+    fi
+  else
+    LOG_WARN "Decrypted directory not found: $decrypted_dir"
+  fi
 )
 
 if [[ $? -ne 0 ]]; then
